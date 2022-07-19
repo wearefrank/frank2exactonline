@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<applicationbnd:ApplicationBinding xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:applicationbnd="applicationbnd.xmi" xmi:id="ApplicationBinding_1196945684898">
+  <authorizationTable>
+    <authorizations>
+      <role href="META-INF/application.xml#SR_Observer"/>
+      <groups name="cn=3elijns,cn=support,ou=IBIS,ou=Services,ou=Groups,o=ing"/>
+      <groups name="cn=developers,cn=support,ou=IBIS,ou=Services,ou=Groups,o=ing"/>
+      <groups name="cn=AMSupport,cn=support,ou=IBIS,ou=Services,ou=Groups,o=ing"/>
+    </authorizations>
+    <authorizations>
+      <role href="META-INF/application.xml#SR_Admin"/>
+      <groups name="cn=2elijns,cn=support,ou=IBIS,ou=Services,ou=Groups,o=ing"/>
+    </authorizations>
+    <authorizations>
+      <role href="META-INF/application.xml#SR_DataAdmin"/>
+      <groups name="cn=GA EA,cn=AMbeheer,ou=IBIS,ou=Services,ou=Groups,o=ing"/>
+    </authorizations>
+    <authorizations>
+      <role href="META-INF/application.xml#SR_Tester"/>
+      <groups name="cn=IbisTester4Prod,ou=IBIS,ou=Services,ou=Groups,o=ing"/>
+    </authorizations>
+    <authorizations>
+      <role href="META-INF/application.xml#SR_IbisWebService"/>
+			<groups name="cn=SoapAccess,ou=IBIS,ou=Services,ou=Groups,o=ing"/>
+		
+    </authorizations>
+  </authorizationTable>
+  <application href="META-INF/application.xml#Application_ID"/>
+</applicationbnd:ApplicationBinding>
+		

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>org.wearefrank.ovh.frank2exactonline</groupId>
+	<artifactId>frank2exactonline</artifactId>
+	<version>${revision}</version>
+	<packaging>pom</packaging>
+
+
+	<url>https://git-codecommit.eu-west-1.amazonaws.com/v1/repos/frank2exactonline</url>
+	<name>frank2exactonline parent</name>
+	
+
+	<properties>
+		<timestamp>${maven.build.timestamp}</timestamp>
+		<maven.build.timestamp.format>yyyyMMdd-HHmm</maven.build.timestamp.format>
+
+		<artifactory.url>https://nexus.frankframework.org/BKR</artifactory.url>
+		<artifactory.repository>IbisSource</artifactory.repository>
+	</properties>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.wearefrank.ovh.frank2exactonline</groupId>
+				<artifactId>frank2exactonline-war</artifactId>
+				<type>war</type>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.wearefrank.ovh.frank2exactonline</groupId>
+				<artifactId>frank2exactonline-ear</artifactId>
+				<type>ear</type>
+				<version>${project.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<modules>
+		<module>war</module>
+		<module>ear</module>
+	</modules>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.8.0</version>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.jfrog.buildinfo</groupId>
+				<artifactId>artifactory-maven-plugin</artifactId>
+				<version>2.7.0</version>
+				<inherited>false</inherited>
+				<executions>
+					<execution>
+						<id>build-info</id>
+						<goals>
+							<goal>publish</goal>
+						</goals>
+						<configuration>
+							<deployProperties>
+								<groupId>${project.groupId}</groupId>
+								<artifactId>${project.artifactId}</artifactId>
+								<version>${project.version}</version>
+								<build.by.ci>{{CI_SERVER|"no"}}</build.by.ci>
+								<build.commit>{{CI_COMMIT_SHA|"unknown"}}</build.commit>
+								<build.ref>{{CI_COMMIT_REF_SLUG|"unknown"}}</build.ref>
+								<build.pipeline.id>{{CI_PIPELINE_IID|"unknown"}}</build.pipeline.id>
+								<build.title>{{CI_COMMIT_TITLE|""}}</build.title>
+							</deployProperties>
+							<publisher>
+								<contextUrl>${nexus.url}</contextUrl>
+								<username>${nexus.username}</username>
+								<password>${nexus.password}</password>
+								<repoKey>${nexus.repository}</repoKey>
+								<snapshotRepoKey>${nexus.repository}</snapshotRepoKey>
+							</publisher>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>

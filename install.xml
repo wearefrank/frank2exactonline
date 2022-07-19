@@ -1,0 +1,31 @@
+<config>
+	<document>
+		<title></title>
+		<developer>Jeroen jansen van Rosendaal</developer>
+		<corporateKey>CG77JX</corporateKey>
+	</document>
+	<section type="prop"/>
+	<section type="oprop"/>
+	<section type="java" active="false"/>
+	<section type="fsperm" active="false"/>
+	<section type="tran" active="false"/>
+	<section type="jaas" active="false"/>
+	<section type="sap" active="false"/>
+	<section type="fxf1" active="false"/>
+	<section type="fxf2" active="false"/>
+	<section type="fxf3" active="false"/>
+	<section type="ifsa" active="false"/>
+	<section type="jdbc">
+		<table>
+			<row>
+				<entry>JNDI</entry>
+				<environment>OTAP</environment>
+				<value>jdbc/frank2exactonline</value>
+			</row>
+		</table>
+	</section>
+	<section type="jms_mq" active="false"/>
+	<section type="jms_tibco_stage3" active="false"/>
+	<section type="jms_tibco"/>
+	<section type="sec" active="false"/>
+</config>

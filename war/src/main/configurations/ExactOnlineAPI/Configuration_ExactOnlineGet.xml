@@ -1,0 +1,41 @@
+<Module>
+    <Adapter name="ExactOnlineGet">
+
+        <Receiver name="ExactOnlineGet">
+            <JavaListener name="ExactOnlineGet"/>
+        </Receiver>
+
+
+        <Pipeline firstPipe="CreateCompanyURL">
+
+            <XsltPipe name="CreateCompanyURL" storeResultInSessionKey="companyUrl" styleSheetName="xsl/createCompanyURL.xsl" removeNamespaces="true">
+                <Param name="companyname" sessionKey="companyname"/>
+                <Param name="division" value="${ExactOnlineDivision}"/>
+                <Forward name="success" path="RequestCompanyIDFromExact"/>
+            </XsltPipe>
+
+            <SenderPipe name="RequestCompanyIDFromExact">
+                <SenderSeriesSender>
+                    <IbisLocalSender returnedSessionKeys="access_token" javaListener="GetAccessTokenExact"/>
+                    <HttpSender name="RequestCompanyIDFromExact" headersParams="Authorization" urlParam="companyUrl" methodType="GET">
+                        <Param name="Authorization" pattern="Bearer {access_token}"/>
+                        <Param name="companyUrl" sessionKey="companyUrl"/>
+                    </HttpSender>
+                </SenderSeriesSender>
+                <Forward name="success" path="filterID"/>
+            </SenderPipe>
+
+            <XsltPipe name="filterID" omitXmlDeclaration="true" removeNamespaces="true" styleSheetName="xsl/filterCompanyID.xsl">
+                <Forward name="success" path="OK" />
+            </XsltPipe>
+
+            <Exit path="OK" state="success" code="200" />
+            <Exit path="NotModified" state="success" code="304" empty="true" />
+            <Exit path="BadRequest" state="error" code="400" empty="true" />
+            <Exit path="NotAuthorized" state="error" code="401" empty="true" />
+            <Exit path="NotAllowed" state="error" code="403" empty="true" />
+            <Exit path="ServerError" state="error" code="500" />
+        </Pipeline>
+    </Adapter>
+
+</Module>

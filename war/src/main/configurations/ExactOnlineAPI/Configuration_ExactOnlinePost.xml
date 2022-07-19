@@ -1,0 +1,218 @@
+<Module>
+    <Adapter name="ExactOnlineApi">
+        <Receiver name="ExactOnlineApi">
+            <JavaListener name="ExactOnlineApi"/>
+        </Receiver>
+
+        <Pipeline firstPipe="StoreInvoice">
+
+            <PutInSessionPipe name="StoreInvoice" 
+                sessionKey="invoice" >
+                
+                <Forward name="success" path="StoreDate"/>
+            </PutInSessionPipe>
+
+            <PutInSessionPipe name="StoreDate" 
+                sessionKey="dummy" 
+                value="dummy">
+
+                <Param name="date" xpathExpression="invoice/created-at"/>
+                <Forward name="success" path="GetCompany"/>
+            </PutInSessionPipe>
+
+            <SenderPipe name="GetCompany">   
+                <IbisLocalSender javaListener="ExactOnlineGet"/>
+                <Forward name="success" path="StoreCompanyID"/>
+            </SenderPipe>
+
+            <PutInSessionPipe name="StoreCompanyID" 
+                sessionKey="companyid" >
+                
+                <Forward name="success" path="Invoice"/>
+            </PutInSessionPipe>
+
+            <GetFromSessionPipe name="Invoice" sessionKey="invoice">
+                <Forward name="success" path="ItemIteration"/>
+            </GetFromSessionPipe>
+
+
+            <ForEachChildElementPipe name="ItemIteration" elementXPathExpression="invoice/items/item">
+                <IbisLocalSender javaListener="ExactOnlinePost"/>
+
+                <Forward name="success" path="filterID" />
+            </ForEachChildElementPipe>
+
+            <XsltPipe name="filterID" removeNamespaces="true"  styleSheetName="xsl/invoiceJson.xsl">
+                <Param name="companyname" sessionKey="companyid"/>
+                <Forward name="success" path="PostInvoiceToExact"/>
+            </XsltPipe>
+
+            <SenderPipe name="PostInvoiceToExact">
+                <SenderSeriesSender>
+                    <IbisLocalSender returnedSessionKeys="access_token" javaListener="GetAccessTokenExact"/>
+                    <HttpSender name="PostInvoiceToExact" headersParams="Authorization" url="https://start.exactonline.nl/api/v1/${ExactOnlineDivision}/salesinvoice/SalesInvoices" contentType="application/json" methodType="POST">
+                        <Param name="Authorization" pattern="Bearer {access_token}"/>
+                    </HttpSender>
+                </SenderSeriesSender>
+                <Forward name="success" path="GetDate"/>
+            </SenderPipe>
+
+            <XsltPipe name="GetDate" styleSheetName="xsl/MakeDate.xsl" omitXmlDeclaration="true">
+                <Param name="date" sessionKey="date"/>
+                <Forward name="success" path="OK"/>
+            </XsltPipe>
+
+
+            <Exit path="OK" state="success" code="200" />
+            <Exit path="NotModified" state="success" code="304" empty="true" />
+            <Exit path="BadRequest" state="error" code="400" empty="true" />
+            <Exit path="NotAuthorized" state="error" code="401" empty="true" />
+            <Exit path="NotAllowed" state="error" code="403" empty="true" />
+            <Exit path="ServerError" state="error" code="500" />
+        </Pipeline>
+
+    </Adapter>
+
+
+
+    <Adapter name="ExactOnlinePost">
+
+        <Receiver name="ExactOnlinePost">
+            <JavaListener name="ExactOnlinePost"/>
+        </Receiver>
+
+
+        <Pipeline firstPipe="CreateCode">
+
+
+            <HashPipe name="CreateCode" 
+            storeResultInSessionKey="code" 
+            preserveInput="true" 
+            secret="WeAreFrank" 
+            algorithm="HmacMD5">
+            
+                <Param name="code" sessionKey="file" xpathExpression="item/description"/>
+                <Forward name="success" path="removeMetaChars"/>
+            </HashPipe>
+
+            <XsltPipe name="removeMetaChars" 
+                storeResultInSessionKey="cleanCode" 
+                preserveInput="true" 
+                styleSheetName="xsl/removeMetaChars.xsl">
+                <Param name="code" sessionKey="code"/>
+                <Forward name="success" path="GetItemPrice" />
+            </XsltPipe>
+
+            <PutInSessionPipe name="GetItemPrice" 
+                sessionKey="price" 
+                value="{price}">
+
+                <Param name="price" xpathExpression="item/price"/>
+                <Forward name="success" path="amount"/>
+            </PutInSessionPipe>
+
+            <PutInSessionPipe name="amount"
+                sessionKey="amount"
+                value="{amount}">
+
+                <Param name="amount" xpathExpression="item/amount"/>
+                <Forward name="success" path="CreateItem"/>
+            </PutInSessionPipe>
+
+
+            <XsltPipe name="CreateItem" 
+            styleSheetName="xsl/item.xsl" 
+            removeNamespaces="true">
+
+                <Param name="code" sessionKey="cleanCode"/>
+                <Forward name="succes" path="PostItemToExact"/>
+            </XsltPipe>
+
+
+            <SenderPipe name="PostItemToExact">
+                <SenderSeriesSender>
+                    <IbisLocalSender returnedSessionKeys="access_token" javaListener="GetAccessTokenExact"/>
+                    <HttpSender name="PostItemToExact" headersParams="Authorization" url="https://start.exactonline.nl/api/v1/${ExactOnlineDivision}/logistics/Items" resultStatusCodeSessionKey="httpStatus" contentType="application/json" methodType="POST">
+                        <Param name="Authorization" pattern="Bearer {access_token}"/>
+                    </HttpSender>
+                </SenderSeriesSender>
+                <Forward name="success" path="CheckStatusCode"/>
+            </SenderPipe>
+
+
+            <XmlSwitchPipe name="CheckStatusCode" 
+            preserveInput="true" 
+            forwardNameSessionKey="httpStatus">
+
+                <Forward name="200" path="FilterItemID"/>
+                <Forward name="201" path="FilterItemID"/>
+                <Forward name="400" path="BadRequest"/>
+                <Forward name="401" path="NotAuthorized"/>
+                <Forward name="403" path="NotAllowed"/>
+                <Forward name="500" path="CreateURL"/>
+            </XmlSwitchPipe>
+
+
+            <XsltPipe name="FilterItemID" 
+            styleSheetName="xsl/createItemJson.xsl" 
+            removeNamespaces="true">
+
+                <Param name="price" sessionKey="price"/>
+                <Forward name="success" path="AddPriceToItem"/>
+            </XsltPipe>
+
+
+            <SenderPipe name="AddPriceToItem">
+                <SenderSeriesSender>
+                    <IbisLocalSender returnedSessionKeys="access_token" javaListener="GetAccessTokenExact"/>
+                    <HttpSender name="AddPriceToItem" headersParams="Authorization" url="https://start.exactonline.nl/api/v1/${ExactOnlineDivision}/logistics/SalesItemPrices" contentType="application/json" methodType="POST">
+                        <Param name="Authorization" pattern="Bearer {access_token}"/>
+                    </HttpSender>
+                </SenderSeriesSender>
+                <Forward name="success" path="ReturnItemID"/>
+            </SenderPipe>
+
+
+            <XsltPipe name="CreateURL" 
+            storeResultInSessionKey="generatedUrl" 
+            styleSheetName="xsl/createURL.xsl" 
+            removeNamespaces="true">
+
+                <Param name="code" sessionKey="cleanCode"/>
+                <Param name="division" value="${ExactOnlineDivision}"/>
+                <Forward name="success" path="RequestItemFromExact"/>
+            </XsltPipe>
+
+
+            <SenderPipe name="RequestItemFromExact">
+                <SenderSeriesSender>
+                    <IbisLocalSender returnedSessionKeys="access_token" javaListener="GetAccessTokenExact"/>
+                    <HttpSender name="RequestItemFromExact" headersParams="Authorization" methodType="GET" urlParam="generatedUrl">
+                        <Param name="Authorization" pattern="Bearer {access_token}"/>
+                        <Param name="generatedUrl" sessionKey="generatedUrl"/>
+                    </HttpSender>
+                </SenderSeriesSender>
+                <Forward name="success" path="ReturnItemID"/>
+            </SenderPipe>
+
+
+            <XsltPipe name="ReturnItemID" 
+            styleSheetName="xsl/filterID.xsl" 
+            removeNamespaces="true" 
+            omitXmlDeclaration="true">
+
+                <Param name="amount" sessionKey="amount"/>
+                <Forward name="success" path="OK"/>
+            </XsltPipe>
+
+            <Exit path="OK" code="200" state="success"/>
+            <Exit path="NotModified" code="304" state="success" empty="true"/>
+            <Exit path="BadRequest" code="400" state="error" empty="true"/>
+            <Exit path="NotAuthorized" code="401" state="error" empty="true"/>
+            <Exit path="NotAllowed" code="403" state="error" empty="true"/>
+            <Exit path="ServerError" code="500" state="error"/>
+
+        </Pipeline>
+
+    </Adapter>
+</Module>

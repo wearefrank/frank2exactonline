@@ -1,0 +1,13 @@
+.idea
+*.iml
+target
+lib
+overlays
+.settings
+.classpath
+/bin/
+*.db
+/build/
+*.eml
+frank-runner.properties
+FrankConfig.xsd

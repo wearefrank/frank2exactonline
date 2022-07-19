@@ -1,0 +1,6 @@
+<!DOCTYPE IOS-Adaptering [
+	<!ENTITY voorbeeld SYSTEM "./Configuration_voorbeeldconfig.xml">
+]>
+<IOS-Adaptering configurationName="voorbeeldconfigs">
+	&voorbeeld;
+</IOS-Adaptering>

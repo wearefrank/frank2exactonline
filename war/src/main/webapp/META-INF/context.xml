@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context>
+	<!-- <Resource
+		name="jdbc/frank4template"
+		type="javax.sql.DataSource"
+		driverClassName="org.h2.Driver"
+		url="jdbc:h2:file://c:/temp/frank4template"
+	/> -->
+	<Resource 
+ 		name="jdbc/frank2exactonline" 
+ 		auth="Container" 
+ 		type="javax.sql.DataSource" 
+ 		username="frank2exactonline_user" 
+ 		password="frank2exactonline_user" 
+ 		driverClassName="oracle.jdbc.driver.OracleDriver" 
+ 		url="jdbc:oracle:thin:@localhost:1521:xe" 
+ 		maxActive="10" 
+ 		maxIdle="2" 
+ 		maxWait="30000" 
+ 	/> 
+</Context>

@@ -1,0 +1,7 @@
+<!DOCTYPE IOS-Adaptering [
+]>
+<IOS-Adaptering name="frank2exactonline">
+	<jmsRealms>
+		<jmsRealm realmName="jdbc" datasourceName="jdbc/${instance.name}"/>
+	</jmsRealms>
+</IOS-Adaptering>

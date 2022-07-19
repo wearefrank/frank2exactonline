@@ -1,0 +1,92 @@
+<Module>
+    <Adapter name="OAuthExact">
+        <Receiver name="OAuthExact">
+            <JavaListener name="OAuthExact" />
+        </Receiver>
+
+        <Pipeline firstPipe="GetTokenInfo">
+
+            <Exit path="EXIT" state="success" />
+            <Exit path="ERROR" state="error" />
+
+            <LocalFileSystemPipe name="GetTokenInfo" 
+                action="read" 
+                storeResultInSessionKey="oldTokenInfo">
+                <Param name="filename" pattern="${configurations.directory}\ExactOnlineAPI\tokenExact.xml" />
+                <Forward name="success" path="GetFreshToken" />
+            </LocalFileSystemPipe>
+
+            <SenderPipe name="GetFreshToken">
+                <sender className="nl.nn.adapterframework.http.HttpSender" 
+                        url="https://start.exactonline.nl/api/oauth2/token" 
+                        allowSelfSignedCertificates="true" 
+                        verifyHostname="false" 
+                        resultStatusCodeSessionKey="httpStatus" 
+                        methodType="POST" 
+                        postType="URLENCODED" 
+                        contentType="application/x-www-form-urlencoded">
+                </sender>
+                <Param name="refresh_token" xpathExpression="root/refresh_token" />
+                <Param name="grant_type" value="refresh_token" />
+                <Param name="client_id" xpathExpression="root/client_id" />
+                <Param name="client_secret" xpathExpression="root/client_secret" />
+                <Forward name="success" path="checkStatusCode" />
+            </SenderPipe>
+
+            <XmlSwitchPipe name="checkStatusCode" 
+                forwardNameSessionKey="httpStatus" 
+                preserveInput="true">
+                <Forward name="200" path="Json2Xml" />
+                <Forward name="400" path="ERROR" />
+                <Forward name="401" path="ERROR" />
+                <Forward name="403" path="ERROR" />
+            </XmlSwitchPipe>
+
+            <JsonPipe name="Json2Xml">
+                <Forward name="success" path="NewTokenInfo" />
+            </JsonPipe>
+
+            <XsltPipe name="NewTokenInfo" 
+                styleSheetName="xsl/newTokenInfo.xsl">
+                <Param name="oldTokenInfo" sessionKey="oldTokenInfo" type="domdoc"/>
+                <Forward name="success" path="StoreTokenInfo"/>
+            </XsltPipe>
+
+            <LocalFileSystemPipe name="StoreTokenInfo" 
+                action="write" 
+                overwrite="true"
+                streamingActive="false">
+                <Param name="filename" pattern="${configurations.directory}\ExactOnlineAPI\tokenExact.xml" />
+                <Forward name="success" path="EXIT" />
+            </LocalFileSystemPipe>
+        </Pipeline>
+    </Adapter>
+
+    <Adapter name="GetAccessTokenExact">
+        <Receiver name="GetAccessTokenExact">
+            <JavaListener name="GetAccessTokenExact" />
+        </Receiver>
+
+        <Pipeline firstPipe="GetTokenInfo">
+            <Exit path="EXIT" state="success" />
+            <LocalFileSystemPipe name="GetTokenInfo" 
+                action="read" 
+                filename="${configurations.directory}\ExactOnlineAPI\tokenExact.xml"
+                preserveInput="true"
+                storeResultInSessionKey="file">
+                <Forward name="success" path="GetAccessToken" />
+            </LocalFileSystemPipe>
+
+            <PutInSessionPipe name="GetAccessToken" 
+                sessionKey="dummy" 
+                value="dummy">
+                <Param name="access_token" xpathExpression="root/access_token" sessionKey="file"/>
+                <Forward name="success" path="EXIT"/>
+            </PutInSessionPipe>
+        </Pipeline>
+    </Adapter>
+
+    <SendMessageJob name="renewTokenExact" 
+        interval="585000" 
+        javaListener="OAuthExact" />
+</Module>

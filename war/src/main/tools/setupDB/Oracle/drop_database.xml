@@ -1,0 +1,8 @@
+<project default="drop.database">
+	<target name="drop.database">
+		<exec executable="sqlplus">
+			<arg value="frank2exactonline_user/frank2exactonline_user"/>
+			<arg value="@drop_database.sql"/>
+		</exec>
+	</target>
+</project>

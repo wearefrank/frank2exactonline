@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.wearefrank.ovh.frank2exactonline</groupId>
+		<artifactId>frank2exactonline</artifactId>
+		<version>${revision}</version>
+	</parent>
+
+	<artifactId>frank2exactonline-ear</artifactId>
+	<name>frank2exactonline EAR module</name>
+	<packaging>ear</packaging>
+
+	<properties>
+		<timestamp>${maven.build.timestamp}</timestamp>
+		<maven.build.timestamp.format>yyyyMMdd-HHmm</maven.build.timestamp.format>
+	</properties>
+
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-ear-plugin</artifactId>
+				<version>3.0.1</version>
+				<configuration>
+ 					<archive> 
+ 						<manifest> 
+ 							<addDefaultImplementationEntries>true</addDefaultImplementationEntries> 
+ 						</manifest> 
+ 						<manifestEntries> 
+ 							<DisableIBMJAXWSEngine>true</DisableIBMJAXWSEngine> 
+ 						</manifestEntries> 
+ 					</archive> 
+					<modules>
+						<webModule>
+							<groupId>org.wearefrank.ovh.frank2exactonline</groupId>
+							<artifactId>frank2exactonline-war</artifactId>
+							<bundleFileName>frank2exactonline.war</bundleFileName>
+							<contextRoot>/frank2exactonline</contextRoot>
+						</webModule>
+					</modules>
+					<filtering>true</filtering>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.1.0</version>
+				<configuration>
+					<encoding>UTF-8</encoding>
+				</configuration>
+			</plugin>
+		</plugins>
+		<finalName>${artifactId}-${project.version}_${timestamp}</finalName>
+	</build>
+
+	<!-- Define the versions of your ear components here -->
+	<dependencies>
+		<dependency>
+			<groupId>org.wearefrank.ovh.frank2exactonline</groupId>
+			<artifactId>frank2exactonline-war</artifactId>
+			<type>war</type>
+		</dependency>
+	</dependencies>
+</project>

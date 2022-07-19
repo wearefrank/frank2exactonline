@@ -1,0 +1,11 @@
+<!DOCTYPE configuration [
+    <!ENTITY OAuth_MoneyBird SYSTEM "Configuration_OAuth_MoneyBird.xml">
+    <!ENTITY MoneyBirdGet SYSTEM "Configuration_MoneyBirdGet.xml">
+    
+]>
+
+<configuration name="MoneybirdAPI">
+    &OAuth_MoneyBird;
+    &MoneyBirdGet;
+    
+</configuration>

@@ -1,0 +1,15 @@
+<project default="create.database">
+	<target name="create.database">
+		<exec executable="sqlplus">
+			<arg value="frank2exactonline_user/frank2exactonline_user"/>
+			<arg value="@drop_database.sql"/>
+		</exec>
+		<exec executable="sqlplus">
+			<arg value="frank2exactonline_user/frank2exactonline_user"/>
+			<arg value="@create_database.sql"/>
+		</exec>
+	</target>
+</project>
+
+
+

@@ -1,0 +1,77 @@
+<Module>
+    <Adapter name="MoneyBirdGet">
+        <Receiver name="MoneyBirdGet">
+            <JavaListener name="MoneyBirdGet" />
+        </Receiver>
+
+        <Pipeline firstPipe="GetDateFromFile">
+
+            <LocalFileSystemPipe name="GetDateFromFile" 
+                action="read" 
+                root="MoneybirdAPI"
+                filename="${configurations.directory}\MoneybirdAPI\latestInvoiceDate.xml"
+                preserveInput="true"
+                storeResultInSessionKey="date">
+                <Forward name="success" path="RequestInvoiceIDFromMoneyBird" />
+            </LocalFileSystemPipe>
+
+            <SenderPipe name="RequestInvoiceIDFromMoneyBird">
+                <SenderSeriesSender>
+                    <IbisLocalSender javaListener="GetAccessTokenMoneyBird" returnedSessionKeys="access_token"/>
+                    <HttpSender name="RequestInvoiceIDFromMoneyBird" 
+                        methodType="GET"
+                        headersParams="Authorization"
+                        urlParam="list">
+                        <Param name="Authorization" pattern="Bearer {access_token}"/>
+                        <Param name="list" pattern="https://moneybird.com/api/v2/${MoneyBirdDivision}/sales_invoices/synchronization.xml?filter=created_after%3A{date}"/>
+                    </HttpSender>
+                </SenderSeriesSender>
+                <Forward name="success" path="FilterInvoiceID" />
+            </SenderPipe>
+
+           <XsltPipe name="FilterInvoiceID"
+				styleSheetName="xsl/invoiceid.xsl">
+				<Forward name="success" path="InvoiceIDIteration" />
+			</XsltPipe>
+
+            <ForEachChildElementPipe name="InvoiceIDIteration" elementXPathExpression="/temp/id">
+                <SenderSeriesSender>
+                    <IbisLocalSender javaListener="GetAccessTokenMoneyBird" returnedSessionKeys="access_token"/>
+                    <HttpSender name="RequestInvoiceFromMoneyBird" 
+                        methodType="GET"
+                        headersParams="Authorization"
+                        urlParam="call">
+                        <Param name="Authorization" pattern="Bearer {access_token}"/>
+                        <Param name="call" xpathExpression="concat('https://moneybird.com/api/v2/${MoneyBirdDivision}/sales_invoices/', . , '.xml')"/>
+                    </HttpSender>
+                    <XsltSender name="ExtractInvoice" styleSheetName="xsl/extractInvoice.xsl" omitXmlDeclaration="true"/>
+                    <IbisLocalSender javaListener="ExactOnlineApi"/> 
+                </SenderSeriesSender>
+                <Forward name="success" path="GetDate" />
+            </ForEachChildElementPipe>
+
+            <PutInSessionPipe name="GetDate"
+                sessionKey="dummy"
+                value="dummy">
+                <Param name="date" xpathExpression="results/result[position()=1]/date"/>
+                <Forward name="success" path="StoreDate"/>
+            </PutInSessionPipe>
+
+            <LocalFileSystemPipe name="StoreDate" 
+                action="write" 
+                overwrite="true"
+                getInputFromSessionKey="date"
+                streamingActive="false">                
+                <Param name="filename" pattern="${configurations.directory}\MoneybirdAPI\latestInvoiceDate.xml" />
+                <Forward name="success" path="OK" />
+            </LocalFileSystemPipe>
+            
+            <Exit path="OK" state="success" code="200" />
+            <Exit path="NotModified" state="success" code="304" empty="true" />
+            <Exit path="BadRequest" state="error" code="400" empty="true" />
+            <Exit path="NotAuthorized" state="error" code="401" empty="true" />
+            <Exit path="NotAllowed" state="error" code="403" empty="true" />
+            <Exit path="ServerError" state="error" code="500" />
+        </Pipeline>
+    </Adapter>
+</Module>

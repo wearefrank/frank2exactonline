@@ -1,0 +1,11 @@
+<!DOCTYPE configuration [
+	<!ENTITY OAuth_Exact SYSTEM "Configuration_OAuth_Exact.xml">
+    <!ENTITY ExactOnlinePost SYSTEM "Configuration_ExactOnlinePost.xml">
+    <!ENTITY ExactOnlineGet SYSTEM "Configuration_ExactOnlineGet.xml">
+]>
+
+<configuration name="ExactOnlineAPI">
+	&OAuth_Exact;
+    &ExactOnlinePost;
+    &ExactOnlineGet;
+</configuration>

@@ -1,5 +1,0 @@
-## Include the EAR pipeline from the DM Pipeline Project
-## (See https://vcs.aws.insim.biz/ibissource/dm/pipeline/blob/master/ear/.gitlab-ci.yml)
-include:
-  - project: ''
-    file: '/ear/.gitlab-ci.yml'

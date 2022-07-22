@@ -144,19 +144,26 @@
             preserveInput="true" 
             forwardNameSessionKey="httpStatus">
 
-                <Forward name="200" path="FilterItemID"/>
-                <Forward name="201" path="FilterItemID"/>
+                <Forward name="200" path="StoreItemID"/>
+                <Forward name="201" path="StoreItemID"/>
                 <Forward name="400" path="BadRequest"/>
                 <Forward name="401" path="NotAuthorized"/>
                 <Forward name="403" path="NotAllowed"/>
                 <Forward name="500" path="CreateURL"/>
             </XmlSwitchPipe>
+            
+            <PutInSessionPipe name="StoreItemID"
+            	sessionKey="itemID"
+           		value="/entry/content/properties/ID">
+            	
+            	<Forward name="succes" path="FilterItemID"/>
+            </PutInSessionPipe>
 
 
             <XsltPipe name="FilterItemID" 
             styleSheetName="xsl/createItemJson.xsl" 
             removeNamespaces="true">
-
+				
                 <Param name="price" sessionKey="price"/>
                 <Forward name="success" path="AddPriceToItem"/>
             </XsltPipe>
@@ -169,7 +176,7 @@
                         <Param name="Authorization" pattern="Bearer {access_token}"/>
                     </HttpSender>
                 </SenderSeriesSender>
-                <Forward name="success" path="ReturnItemID"/>
+                <Forward name="success" path="ReturnNewItemID"/>
             </SenderPipe>
 
 
@@ -201,6 +208,16 @@
             removeNamespaces="true" 
             omitXmlDeclaration="true">
 
+                <Param name="amount" sessionKey="amount"/>
+                <Forward name="success" path="OK"/>
+            </XsltPipe>
+            
+            <XsltPipe name="ReturnNewItemID" 
+            styleSheetName="xsl/filterNewID.xsl" 
+            removeNamespaces="true" 
+            omitXmlDeclaration="true">
+				
+				<Param name="itemID" sessionKey="itemID"/>
                 <Param name="amount" sessionKey="amount"/>
                 <Forward name="success" path="OK"/>
             </XsltPipe>

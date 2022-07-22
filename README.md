@@ -14,13 +14,22 @@ This includes a generated item code, a name, a description and a sales price. An
 
 To use the MoneyBird2ExactOnline Frank you will need to change the following inside the code for it to be work.
 
-
+- Add the Frank-Runner
 - MoneyBird Api client id/secret
 - MoneyBird Api token/refresh token
 - MoneyBird administration number
 - Exact Online Api client id/secret
 - Exact Online Api token/refresh token
 - Exact Online division number
+
+## Add the Frank-Runner
+To run the project you need to add the Frank-Runner on the same folder level as frank2exactonline.
+The folder structure will look as follows: <br>
+├── workspace <br>
+│   ├── frank2exactonline <br>
+│   ├── frank-runner <br>
+<br>
+You can find the frank-runner here: https://github.com/ibissource/frank-runner
 
 ## MoneyBird Api client id/secret
 To be able connect with the MoneyBird Api we have to use the Oauth2 authentication. The first thing we need for this is the client id/secret.
@@ -38,7 +47,7 @@ Now you just have to fill in your client id/secret and press the get new access 
 ## MoneyBird administration number
 To find your administration number you need to your administration and look at the url. https://moneybird.com/346124425543812295/feed the number in the url is your administration number.
 You will need to change the administration number in the following location:
-frank2exactonline\war\src\main\resources\DeploymentSpecifics.properties
+frank2exactonline\src\main\resources\DeploymentSpecifics.properties
 
 ## Exact Online Api client id/secret
 To be able connect with the MoneyBird Api we have to use the Oauth2 authentication. The first thing we need for this is the client id/secret.
@@ -58,4 +67,4 @@ To get your division number you will have to make an Apicall with Postman.
 Using the token we created in the previous step make a get call. Make sure the dropdown on the left says get and then fill in the following url: https://start.exactonline.nl/api/v1/current/Me?$select=CurrentDivision
 now press the send button. This will return your division number.
 You will need to change the division number in the following location:
-frank2exactonline\war\src\main\resources\DeploymentSpecifics.properties
+frank2exactonline\src\main\resources\DeploymentSpecifics.properties
